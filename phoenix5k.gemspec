@@ -6,12 +6,11 @@ require 'phoenix5k/version'
 Gem::Specification.new do |spec|
   spec.name          = "phoenix5k"
   spec.version       = Phoenix5k::VERSION
-  spec.authors       = ["lplit"]
-  spec.email         = ["lplit@wp.pl"]
+  spec.authors       = ["Michal Rudek", "Saalik Hatia"]
+  spec.email         = ["michal.rudek@etu.upmc.fr", "saalik.hatia@etu.upmc.fr"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{Grid5k API Wrapper}
+  spec.homepage      = "https://github.com/lplit/phoenix5k"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
@@ -30,4 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.11"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
+
+  spec.add_dependency 'restfully'
 end

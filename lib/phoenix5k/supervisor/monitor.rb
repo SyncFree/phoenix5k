@@ -4,7 +4,7 @@ require 'yaml'
 require 'time'
 require 'logger'
 
-module Phoenix 
+module Phoenix5k
   class Monitor
     attr_reader :root, :session, :id, :j_hash
     attr_accessor :jobs, :logger
