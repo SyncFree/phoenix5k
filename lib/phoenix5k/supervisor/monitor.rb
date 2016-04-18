@@ -145,7 +145,7 @@ module Phoenix5k
     end
     
     # Daemon to be run in thread
-    # @return Does not return, infinite loop
+    # @return Nothing
     def supervise_d
       @supervise = true
       @logger.info "monitor{#@id} - Launching supervisor daemon..."
@@ -166,8 +166,14 @@ module Phoenix5k
     # Stops the supervision daemon 
     # @return Nothing 
     def stop_d 
-      @supervise = false 
+      @supervise = false
     end 
+
+    # Stops and kills supervision
+    def kill
+      self.stop_d
+      exit
+    end
 
     # Print supervised jobs
     # @return nothing
@@ -190,7 +196,11 @@ module Phoenix5k
         puts "#{key} : #{value}"
       end
     end
+
+    def self.eq? m
+      return false if !(m.is_a? Monitor)
+      return true if self.id == m.id
+    end     
     
   end #Class
 end
-
