@@ -2,52 +2,53 @@
 
 require "bundler/setup"
 require "phoenix5k"
+module Phoenix5k 
+  puts "Let's try shit."
+  puts "First trying to connect"
+  m1 = Monitor.new
+  m1.info
+  m2 = Monitor.new
+  m2.info
+  threads = []
+  # Change shit here to show off tomorrow.
+  # https://api.grid5000.fr/sid/ui/jobs.html?state=running,waiting,hold,launching
+  usrs =  ['omarcu', 'tseleck', 'altomsic']
+  usrs2 = 'gfedak'
 
-puts "Let's try shit."
-puts "First trying to connect"
-m1 = Monitor.new
-m1.info
-m2 = Monitor.new
-m2.info
+  # Long 
+  puts "Thread 1 starting for #{usrs}"
+  threads << Thread.new { m1.fetch_jobs!("all", usrs2) }
+  puts "Thread 2 starting for #{usrs2}"
+  threads << Thread.new { m2.fetch_jobs!("lille", usrs) }
+  puts "Waiting for data collect to finish"
+  #
 
-# Change shit here to show off tomorrow.
-# https://api.grid5000.fr/sid/ui/jobs.html?state=running,waiting,hold,launching
-usrs =  ['omarcu', 'tseleck', 'altomsic']
-usrs2 = 'gfedak'
+  threads.each do |thr|
+    threads.delete(thr)
+    thr.join
+  end
 
-# Long 
-puts "Thread 1 starting for #{usrs}"
-threads << Thread.new { m1.fetch_jobs!("all", usrs2) }
-puts "Thread 2 starting for #{usrs2}"
-threads << Thread.new { m2.fetch_jobs!("lille", usrs) }
-puts "Waiting for data collect to finish"
-#
+  puts "Thread 1 starting for #{usrs}"
+  threads << Thread.new { m1.supervise_d }
+  puts "Thread 2 starting for #{usrs2}"
+  threads << Thread.new { m2.supervise_d }
+  puts "Both threads now running"
+  puts "Putting Main to sleep for 10sec (two info ticks)"
+  sleep 11
 
-threads.each do |thr|
-  threads.delete(thr)
-  thr.join
-end
+  threads.each do |thr|
+    puts "Thread #{thr.inspect} terminating..."
+    threads.delete(thr)
+    thr.exit
+    thr.join
+  end
+  puts "All threads joined" 
 
-puts "Thread 1 starting for #{usrs}"
-threads << Thread.new { m1.supervise_d }
-puts "Thread 2 starting for #{usrs2}"
-threads << Thread.new { m2.supervise_d }
-puts "Both threads now running"
-puts "Putting Main to sleep for 10sec (two info ticks)"
-sleep 11
-
-threads.each do |thr|
-  puts "Thread #{thr.inspect} terminating..."
-  threads.delete(thr)
-  thr.exit
-  thr.join
-end
-puts "All threads joined" 
-
-m1.info
-puts ""
-m2.info
-puts ""
-m1.info_hash
-puts "" 
-m2.info_hash
+  m1.info
+  puts ""
+  m2.info
+  puts ""
+  m1.info_hash
+  puts "" 
+  m2.info_hash
+end 
