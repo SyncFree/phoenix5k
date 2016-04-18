@@ -22,7 +22,7 @@ module Phoenix5k
       @logger.level = Logger::DEBUG
       @logger.info "monitor{#@id} - Loading config file..." 
       @config = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
-      @logger.info "monitor{#@id} - connecting to #{@config['uri']}" 
+      @logger.info "monitor{#@id} - Connecting to #{@config['uri']}" 
       @session = Restfully::Session.new(
        :username => @config['username'],
        :password => @config['password'],
@@ -46,6 +46,8 @@ module Phoenix5k
     # It is possible to feed jobusrid an array of values, for example :
     # ['user1', 'user2', 1235432, 'user4'] , which  will return an array of
     # all the corresponding jobs, whether those are identified by jobIDs or by userIDs
+    # @param cluster [String] Specific cluster (eg. "Rennes"), nil or "all"
+    # @param jobusrid [Array] User IDs, Job IDs, anything goes
     # @return Updated version of @jobs array
     def fetch_jobs!(cluster, jobusrid)
       if jobusrid==nil
@@ -104,6 +106,8 @@ module Phoenix5k
     end
     
     # Print all job proprietes
+    # @param job [Integer] Job ID
+    # @return nothing
     def job_properties(job)
       job.properties.each do |k, v|
         puts "#{k} : #{v}"
@@ -111,8 +115,12 @@ module Phoenix5k
       puts ""
     end
 
-    # Update jobs array in jobs hash for a given user
-    def updateHash(k, v)
+    # Sort jobs in a hashlist by site name
+    # lille : [123, 456, 789]
+    # @param k [String] Site name, "lille", "rennes"
+    # @param v [Integer] Job ID
+    # @return nothing
+    def updateHash!(k, v)
       arr= [v]
       if (@j_hash.has_key? k)
         arr = @j_hash.fetch(k)
@@ -122,7 +130,9 @@ module Phoenix5k
     end
     
 
-    # Report on job status
+    # Report on a job status
+    # @param job Job to report
+    # @return nothing
     def job_report(job)
       state = job['state']
       owned = job['user']
@@ -135,6 +145,7 @@ module Phoenix5k
     end
     
     # Daemon to be run in thread
+    # @return Does not return, infinite loop
     def supervise_d
       @logger.info "monitor{#@id} - Launching supervisor daemon..."
       if jobs.length > 0 
@@ -151,7 +162,8 @@ module Phoenix5k
       @logger.warn "monitor{#@id} - Supervisor daemon terminated"
     end
 
-    # Print info about supervised jobs
+    # Print supervised jobs
+    # @return nothing
     def info
       print "monitor{#@id} - supervising jobs: "
       if @jobs.length==0
@@ -164,7 +176,7 @@ module Phoenix5k
       puts ""
     end
 
-    # Print hash
+    # Print supervised jobs grouped by sites
     def info_hash
       puts "monitor{#@id} - jobs statuses: "
       @j_hash.each do |key, value|
