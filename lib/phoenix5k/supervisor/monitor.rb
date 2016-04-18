@@ -195,12 +195,13 @@ module Phoenix5k
       @j_hash.each do |key, value|
         puts "#{key} : #{value}"
       end
+      puts "-------------------------------"
     end
 
     def self.eq? m
       return false if !(m.is_a? Monitor)
       return true if self.id == m.id
     end     
-    
+
   end #Class
 end

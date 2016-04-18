@@ -23,7 +23,7 @@ module Phoenix5k
 			end 
 		end 
 
-		# Starts a given Monitor
+		# Starts a given Monitor, 
 		# @param id Monitor's ID 
 		# @return Nothing
 		def startMon id 
@@ -39,7 +39,12 @@ module Phoenix5k
 		# @param id Monitor's ID 
 		# @return Nothing
 		def stopMon id
-
+			m_tmp = @monitors.select { |m| m.id = id } 
+			if m_tmp.empty?
+				@logger.warn "Monitor#{m_tmp.id} does not exist"
+				return
+			end 
+			threads << Thread.new { m_tmp.supervise_d }
 		end
 
 		# Starts all the Monitors
@@ -63,13 +68,13 @@ module Phoenix5k
 			@monitors.each do |m|
 				@logger.info "Monitor #{m.id} - requesting stop"
 				m.stop_d
-			end 
+			end
 		end
 
 		# Print information about supervisor 
 		def info 
 			puts "Supervising:"
-			@monitors.each do |m| 
+			@monitors.each do |m|
 				m.info_hash
 			end
 			puts "------------"
