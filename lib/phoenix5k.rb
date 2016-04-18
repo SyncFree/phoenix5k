@@ -12,9 +12,10 @@ def require_all(path)
 end
 
 module Phoenix5k
-  require "phoenix5k/version"
-  require "phoenix5k/toolbox"
+  require     "phoenix5k/version"
+  require     "phoenix5k/toolbox"
   require_all "phoenix5k/deploy"
   require_all "phoenix5k/supervisor"
-
+  $dbugLvl    = Logger::DEBUG
+  $dbug       = 1
 end

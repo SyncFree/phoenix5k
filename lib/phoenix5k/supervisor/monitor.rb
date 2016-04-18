@@ -7,8 +7,7 @@ require 'logger'
 module Phoenix5k
   class Monitor
     attr_reader :root, :session, :id, :j_hash
-    attr_accessor :jobs, :logger
-    $dbug=1
+    attr_accessor :jobs, :logger, :supervise
     @config
     @@cnt=0
 
@@ -16,10 +15,11 @@ module Phoenix5k
     def initialize
       @id = @@cnt
       @@cnt+=1
+      @supervise = false 
       @jobs = []
       @j_hash = Hash.new
       @logger = Logger.new(File.new("./logs/monitor#{id}.log", 'w'))
-      @logger.level = Logger::DEBUG
+      @logger.level = $dbugLvl
       @logger.info "monitor{#@id} - Loading config file..." 
       @config = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
       @logger.info "monitor{#@id} - Connecting to #{@config['uri']}" 
@@ -147,9 +147,10 @@ module Phoenix5k
     # Daemon to be run in thread
     # @return Does not return, infinite loop
     def supervise_d
+      @supervise = true
       @logger.info "monitor{#@id} - Launching supervisor daemon..."
       if jobs.length > 0 
-        while 1 do
+        while @supervise do
           @jobs.each do |job|
             job_report(job)
           end
@@ -161,6 +162,12 @@ module Phoenix5k
       end 
       @logger.warn "monitor{#@id} - Supervisor daemon terminated"
     end
+
+    # Stops the supervision daemon 
+    # @return Nothing 
+    def stop_d 
+      @supervise = false 
+    end 
 
     # Print supervised jobs
     # @return nothing
@@ -186,3 +193,4 @@ module Phoenix5k
     
   end #Class
 end
+
