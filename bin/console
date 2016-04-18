@@ -5,29 +5,46 @@ require "phoenix5k"
 module Phoenix5k 
   puts "Let's try shit."
   puts "First trying to connect"
-  m1 = Monitor.new
-  m1.info
-  m2 = Monitor.new
-  m2.info
   threads = []
   # Change shit here to show off tomorrow.
   # https://api.grid5000.fr/sid/ui/jobs.html?state=running,waiting,hold,launching
   usrs =  ['omarcu', 'tseleck', 'altomsic']
   usrs2 = 'gfedak'
 
+=begin
   # Long 
   puts "Thread 1 starting for #{usrs}"
   threads << Thread.new { m1.fetch_jobs!("all", usrs2) }
   puts "Thread 2 starting for #{usrs2}"
-  threads << Thread.new { m2.fetch_jobs!("lille", usrs) }
+  threads << Thread.new { m2.fetch_jobs!("all", usrs) }
   puts "Waiting for data collect to finish"
   #
 
   threads.each do |thr|
-    threads.delete(thr)
+    #threads.delete(thr)
     thr.join
   end
+=end
+puts "Gonna try supervisor now, get ready for hardcore!"
+  s = Supervisor.new
+  threads << Thread.new { s.addMon(API_Monitor.new, "all", "gfedak") }
+  threads << Thread.new{ s.addMon(API_Monitor.new, "all", usrs) }
+  puts "Waiting for threads to finish"
+  threads.each do |t|
+  	t.join
+  end 
+  puts "Monitors added"
+  s.info
+  puts "Starting all"
+  s.startAll
+  puts "All started, zzz"
+  sleep 5
+  puts "Killing all"
+  s.killAll
+  s.info
+  puts "Supervisor now done !"
 
+=begin
   puts "Thread 1 starting for #{usrs}"
   threads << Thread.new { m1.supervise_d }
   puts "Thread 2 starting for #{usrs2}"
@@ -51,4 +68,6 @@ module Phoenix5k
   m1.info_hash
   puts "" 
   m2.info_hash
+=end
+
 end 

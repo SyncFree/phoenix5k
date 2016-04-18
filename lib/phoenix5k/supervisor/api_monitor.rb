@@ -5,7 +5,7 @@ require 'time'
 require 'logger'
 
 module Phoenix5k
-  class Monitor
+  class API_Monitor
     attr_reader :root, :session, :id, :j_hash
     attr_accessor :jobs, :logger, :supervise
     @config
@@ -22,13 +22,19 @@ module Phoenix5k
       @logger.level = $dbugLvl
       @logger.info "monitor{#@id} - Loading config file..." 
       @config = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
-      @logger.info "monitor{#@id} - Connecting to #{@config['uri']}" 
-      @session = Restfully::Session.new(
-       :username => @config['username'],
-       :password => @config['password'],
-       :base_uri => @config['uri']
-       )
-      @root = @session.root
+      begin 
+        @logger.info "monitor{#@id} - Connecting to #{@config['uri']}" 
+        @session = Restfully::Session.new(
+          :username => @config['username'],
+          :password => @config['password'],
+          :base_uri => @config['uri']
+        )
+        @root = @session.root
+      rescue 
+        @logger.fatal "monitor{#@id} - API Unreacheable"
+        puts "monitor{#@id} - API Unreacheable"
+        return
+      end 
     end 
 
     # Report when dying
@@ -154,13 +160,14 @@ module Phoenix5k
           @jobs.each do |job|
             job_report(job)
           end
-          sleep(5)
+          sleep(1)
         end
       else
         @logger.warn "monitor{#@id} - Not supervising any jobs"
         return
       end 
       @logger.warn "monitor{#@id} - Supervisor daemon terminated"
+      return
     end
 
     # Stops the supervision daemon 
@@ -170,9 +177,9 @@ module Phoenix5k
     end 
 
     # Stops and kills supervision
-    def kill
+    def stopKill
       self.stop_d
-      exit
+      return
     end
 
     # Print supervised jobs

@@ -4,25 +4,24 @@ module Phoenix5k
 	class Supervisor
 		attr_accessor :monitors, :threads, :logger
 		
-		# Spawns an initial Monitor instance that will search 
-		# the grid's infrastructure and isolate all the sites 
-		# for with JobID/UserID present
 		def initialize
 			@logger = Logger.new(File.new("./logs/supervisor.log", 'w'))
-			@monitors = Hash.new # "Lille" -> jid123 jid543 etc
-			@threads = []
+			@monitors = Hash.new # Monitor -> Thread 
+			@m_arr = []
 			@logger.info "Supervisor created"
 		end
 
 		# Adds a monitor to supervision 
-		def addMon mon 
-			if mon.is_a? Monitor 
-				monitors<<m
-			else 
-				@logger.warn "#{mon} - not a Monitor instance, not added"
-			end 
+		# @param mon [Monitor] Instance of Monitor 
+		# @param site [String] Search scope: "nil" for full, "lille" etc for specific site
+		# @param ids [Int/String Array] What to search for, jobids, usersids
+		# @return Nothing
+		def addMon (mon, site, ids)
+			puts "Launching job fetch for #{mon.id}"
+			mon.fetch_jobs!(site, ids)
+			@m_arr << mon
 		end 
-
+=begin
 		# Starts a given Monitor, 
 		# @param id Monitor's ID 
 		# @return Nothing
@@ -31,8 +30,8 @@ module Phoenix5k
 			if m_tmp.empty?
 				@logger.warn "Monitor#{m_tmp.id} does not exist"
 				return
-			end 
-			threads << Thread.new { m_tmp.supervise_d }
+			end
+			@monitors[m_tmp] = Thread.new { m_tmp.supervise_d }
 		end
 
 		# Stops a given Monitor 
@@ -44,38 +43,54 @@ module Phoenix5k
 				@logger.warn "Monitor#{m_tmp.id} does not exist"
 				return
 			end 
-			threads << Thread.new { m_tmp.supervise_d }
+			@monitors[m_tmp] = Thread.new { m_tmp.supervise_d }
 		end
-
+=end
 		# Starts all the Monitors
 		def startAll
-			if monitors.empty?
+			if @m_arr.empty?
 				@logger.warn "No monitors listed - nothing to start"
 				return
 			end
-			@monitors.each do |m|
+			@m_arr.each do |m|
 				@logger.info "Monitor #{m.id} - requesting start"
-				threads << Thread.new { m.supervise_d }
-			end 
+				@monitors[m]=Thread.new { m.supervise_d }
+				puts "Thread #{@monitors[m]} started !"
+			end
 		end 
 
-		# Stops all the Monitors 
+		# Stops all the Monitors
 		def stopAll
-			if m_tmp.empty?
+			if @m_arr.empty?
 				@logger.warn "No monitors listed - nothing to stop"
 				return
 			end
-			@monitors.each do |m|
+			@m_arr.each do |m, v|
 				@logger.info "Monitor #{m.id} - requesting stop"
 				m.stop_d
 			end
 		end
 
+		# Stops and kills all the Monitors 
+		def killAll 
+			if @monitors.empty?
+				@logger.warn "No monitors listed - nothing to start"
+				return
+			end
+			@monitors.each do |m, v|
+				puts "Doing stuff with #{m} and #{v}"
+				m.stopKill 
+				puts "step2"
+				v.join
+				puts "thread joined"
+			end
+		end 
+
 		# Print information about supervisor 
 		def info 
 			puts "Supervising:"
-			@monitors.each do |m|
-				m.info_hash
+			@m_arr.each do |m|
+				m.info
 			end
 			puts "------------"
 		end 

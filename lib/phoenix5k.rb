@@ -6,7 +6,6 @@
 def require_all(path)
   glob = File.join(File.dirname(__FILE__), path, '*.rb')
   Dir[glob].each do |f|
-    puts "Adding " +f.to_s
     require f
   end
 end
