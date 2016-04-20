@@ -94,7 +94,7 @@ module Phoenix5k
                 end
               elsif (t_id.kind_of? String)
                 if job['user'].to_s == t_id
-                  @logger.info "monitor{#@id} - '#{t_id}' found on '#{site['description']}'jobid #{job['uid']}"  
+                  @logger.info "monitor{#@id} - '#{t_id}' found on '#{site['description']}' jobid #{job['uid']}"  
                   puts "monitor{#@id} - '#{t_id}' found on '#{site['description']}' jobid #{job['uid']}" if $dbug
                   @jobs << job
                   updateHash(site['uid'], job['uid'])
