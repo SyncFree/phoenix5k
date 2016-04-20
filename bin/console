@@ -26,8 +26,10 @@ module Phoenix5k
 =end
 puts "Gonna try supervisor now, get ready for hardcore!"
   s = Supervisor.new
-  threads << Thread.new { s.addMon(APIMonitor.new, "all", "gfedak") }
+  threads << Thread.new{ s.addMon(APIMonitor.new, "all", "gfedak") }
   threads << Thread.new{ s.addMon(APIMonitor.new, "all", usrs) }
+  threads << Thread.new{ s.addMon(APIMonitor.new, "all", "anugraha") }
+
   puts "Waiting for threads to finish"
   threads.each do |t|
   	t.join
@@ -41,7 +43,8 @@ puts "Gonna try supervisor now, get ready for hardcore!"
   puts "Killing all"
   s.killAll
   s.info
-  puts "Supervisor now done !"
+
+  puts "Bye!"
 
 =begin
   puts "Thread 1 starting for #{usrs}"

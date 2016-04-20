@@ -21,7 +21,8 @@ module Phoenix5k
       @logger = Logger.new(File.new("./logs/monitor#{id}.log", 'w'))
       @logger.level = $dbugLvl
       @logger.info "monitor{#@id} - Loading config file..." 
-      @config = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
+      #@config = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
+      @config = $config['r_path']
       begin 
         @logger.info "monitor{#@id} - Connecting to #{@config['uri']}" 
         @session = Restfully::Session.new(

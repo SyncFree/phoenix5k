@@ -15,8 +15,10 @@ module Phoenix5k
 		# @param ids [Int/String Array] What to search for, jobids, usersids
 		# @return Nothing
 		def addMon (mon, site, ids)
-			puts "Launching job fetch for #{mon.id}"
-			@m_arr << mon.fetch_jobs!(site, ids)
+			m=mon
+			puts "Launching job fetch for #{m.id}"
+			m.fetch_jobs!(site, ids)
+			@m_arr << m
 		end 
 =begin
 		# Starts a given Monitor, 
@@ -85,6 +87,7 @@ module Phoenix5k
 			puts "Supervising:"
 			@m_arr.each do |m|
 				m.info_hash
+				m.info
 			end
 			puts "------------"
 		end 

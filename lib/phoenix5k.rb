@@ -34,6 +34,7 @@ module Phoenix5k
   $dbug           = 1
   @logger         = Logger.new(File.new("./logs/phoenix5k.log", 'w'))
   @logger.info    "Phoenix5k initialized"
+  $config         = YAML.load_file(File.expand_path("config.yml"))
   $antidote_path  = "/home/mike/psar/antidote/dev/dev*"
   #"for d in /home/mike/psar/antidote/dev/dev*; do $d/bin/antidote ping; done"
 end
