@@ -4,72 +4,38 @@ require "bundler/setup"
 require "phoenix5k"
 
 module Phoenix5k
-  threads = []
+	threads = []
   # Change shit here to show off tomorrow.
   # https://api.grid5000.fr/sid/ui/jobs.html?state=running,waiting,hold,launching
-  usrs =  ['omarcu', 'tseleck', 'altomsic']
-  usrs2 = 'gfedak'
+  usrs1 = ['omarcu', 'tseleck', 'altomsic']
+  usrs2 = ['gfedak', 'ljonathan']
+  usrs3 = ["anugraha", "jorouzaudcornabas"]
 
-=begin
-  # Long 
-  puts "Thread 1 starting for #{usrs}"
-  threads << Thread.new { m1.fetch_jobs!("all", usrs2) }
-  puts "Thread 2 starting for #{usrs2}"
-  threads << Thread.new { m2.fetch_jobs!("all", usrs) }
-  puts "Waiting for data collect to finish"
-  #
-
-  threads.each do |thr|
-    #threads.delete(thr)
-    thr.join
-  end
-=end
-puts "Gonna try supervisor now, get ready for hardcore!"
+  puts "Gonna try supervisor now, get ready for hardcore!"
   s = Supervisor.new
-  threads << Thread.new{ s.addMon(APIMonitor.new, "all", "gfedak") }
-  threads << Thread.new{ s.addMon(APIMonitor.new, "all", usrs) }
-  threads << Thread.new{ s.addMon(APIMonitor.new, "all", "anugraha") }
+  threads << Thread.new{ s.addMon(APIMonitor.new, "all", usrs1) }
+  threads << Thread.new{ s.addMon(APIMonitor.new, "all", usrs2) }
+  threads << Thread.new{ s.addMon(APIMonitor.new, "all", usrs2) }
 
   puts "Waiting for threads to finish"
   threads.each do |t|
   	t.join
-  end 
+  end
+
   puts "Monitors added"
   s.info
   puts "Starting all"
   s.startAll
   puts "All started, zzz"
-  sleep 5
+  5.times {
+  	print ". "
+  	sleep 1
+  }
+  puts "" 
   puts "Killing all"
   s.killAll
   s.info
 
   puts "Bye!"
-
-=begin
-  puts "Thread 1 starting for #{usrs}"
-  threads << Thread.new { m1.supervise_d }
-  puts "Thread 2 starting for #{usrs2}"
-  threads << Thread.new { m2.supervise_d }
-  puts "Both threads now running"
-  puts "Putting Main to sleep for 10sec (two info ticks)"
-  sleep 11
-
-  threads.each do |thr|
-    puts "Thread #{thr.inspect} terminating..."
-    threads.delete(thr)
-    thr.exit
-    thr.join
-  end
-  puts "All threads joined" 
-
-  m1.info
-  puts ""
-  m2.info
-  puts ""
-  m1.info_hash
-  puts "" 
-  m2.info_hash
-=end
 
 end 
