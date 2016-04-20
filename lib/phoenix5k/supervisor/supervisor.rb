@@ -15,13 +15,13 @@ module Phoenix5k
 		# @param ids [Int/String Array] What to search for, jobids, usersids
 		# @return Nothing
 		def addMon (mon, site, ids)
-			m=mon
-			puts "Launching job fetch for #{m.id}"
-			m.fetch_jobs!(site, ids)
-			@m_arr << m
+			@m_arr << mon
+			puts "Launching job fetch for monitor{#{@m_arr[-1].id}}"
+			@m_arr[-1].fetch_jobs!(site, ids)
 		end 
-=begin
-		# Starts a given Monitor, 
+
+		# Starts a given Monitor, this is blocking, 
+		# and infinite looping till interrupted so launch it in a thread
 		# @param id Monitor's ID 
 		# @return Nothing
 		def startMon id 
@@ -42,9 +42,9 @@ module Phoenix5k
 				@logger.warn "Monitor#{m_tmp.id} does not exist"
 				return
 			end 
-			@monitors[m_tmp] = Thread.new { m_tmp.supervise_d }
+			@monitors[m_tmp].stop_d
 		end
-=end
+
 		# Starts all the Monitors
 		def startAll
 			if @m_arr.empty?
@@ -77,16 +77,17 @@ module Phoenix5k
 				return
 			end
 			@monitors.each do |m, v|
+				@logger.info "Monitor #{m.id} stopping"
 				m.stopKill 
 				v.join
 			end
+			@logger.warn "All monitors killed"
 		end 
 
 		# Print information about supervisor 
 		def info 
 			puts "Supervising:"
 			@m_arr.each do |m|
-				m.info_hash
 				m.info
 			end
 			puts "------------"
