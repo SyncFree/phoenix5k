@@ -5,7 +5,7 @@ require 'time'
 require 'logger'
 
 module Phoenix5k
-  class API_Monitor
+  class APIMonitor
     attr_reader :root, :session, :id, :j_hash
     attr_accessor :jobs, :logger, :supervise
     @config
@@ -60,6 +60,8 @@ module Phoenix5k
         @logger.fatal "At least one job or user id must be specified, aborting"
         raise "At least one job or user id must be specified, aborting"
       end
+      puts "monitor{#@id} - Looking for #{jobusrid} on #{cluster}" if $dbug 
+      @logger.info "Looking for #{jobusrid} on #{cluster}"
       (j_ids = [] << jobusrid).flatten! #Convert to array
       size= j_ids.length
       puts "Size : #{size} & 0 : #{j_ids[0]}"
@@ -141,10 +143,10 @@ module Phoenix5k
     # @return nothing
     def job_report(job)
       state = job['state']
-      owned = job['user']
+      owner = job['user']
       uid = job['uid']
       if ((state.to_s=="running") || (state.to_s=="waiting"))
-        @logger.info "monitor{#@id} - job #{uid} #{state}"
+        @logger.info "monitor{#@id} - #{owner} job #{uid} #{state}"
       else 
         @logger.warn "monitor{#@id} - job #{uid} #{state}"
       end
@@ -160,7 +162,7 @@ module Phoenix5k
           @jobs.each do |job|
             job_report(job)
           end
-          sleep(1)
+          sleep(5)
         end
       else
         @logger.warn "monitor{#@id} - Not supervising any jobs"

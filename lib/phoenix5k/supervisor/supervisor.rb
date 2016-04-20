@@ -1,6 +1,4 @@
 module Phoenix5k 
-	# One monitor per site
-	# 
 	class Supervisor
 		attr_accessor :monitors, :threads, :logger
 		
@@ -18,8 +16,7 @@ module Phoenix5k
 		# @return Nothing
 		def addMon (mon, site, ids)
 			puts "Launching job fetch for #{mon.id}"
-			mon.fetch_jobs!(site, ids)
-			@m_arr << mon
+			@m_arr << mon.fetch_jobs!(site, ids)
 		end 
 =begin
 		# Starts a given Monitor, 
@@ -78,11 +75,8 @@ module Phoenix5k
 				return
 			end
 			@monitors.each do |m, v|
-				puts "Doing stuff with #{m} and #{v}"
 				m.stopKill 
-				puts "step2"
 				v.join
-				puts "thread joined"
 			end
 		end 
 
@@ -90,7 +84,7 @@ module Phoenix5k
 		def info 
 			puts "Supervising:"
 			@m_arr.each do |m|
-				m.info
+				m.info_hash
 			end
 			puts "------------"
 		end 

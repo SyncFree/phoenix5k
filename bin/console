@@ -2,9 +2,8 @@
 
 require "bundler/setup"
 require "phoenix5k"
-module Phoenix5k 
-  puts "Let's try shit."
-  puts "First trying to connect"
+
+module Phoenix5k
   threads = []
   # Change shit here to show off tomorrow.
   # https://api.grid5000.fr/sid/ui/jobs.html?state=running,waiting,hold,launching
@@ -27,8 +26,8 @@ module Phoenix5k
 =end
 puts "Gonna try supervisor now, get ready for hardcore!"
   s = Supervisor.new
-  threads << Thread.new { s.addMon(API_Monitor.new, "all", "gfedak") }
-  threads << Thread.new{ s.addMon(API_Monitor.new, "all", usrs) }
+  threads << Thread.new { s.addMon(APIMonitor.new, "all", "gfedak") }
+  threads << Thread.new{ s.addMon(APIMonitor.new, "all", usrs) }
   puts "Waiting for threads to finish"
   threads.each do |t|
   	t.join
