@@ -3,6 +3,7 @@ require 'restfully'
 require 'yaml'
 require 'time'
 require 'logger'
+require 'thread'
 
 module Phoenix5k
   class APIMonitor
@@ -10,26 +11,31 @@ module Phoenix5k
     attr_accessor :jobs, :logger, :supervise
     @config
     @@cnt=0
+    @@mut = Mutex.new
 
     # Constructor
     def initialize
-      @id = @@cnt
-      @@cnt+=1
+      @@mut.synchronize{
+        @id = @@cnt
+        @@cnt+=1
+      }
       @supervise = false 
       @jobs = []
       @j_hash = Hash.new
-      @logger = Logger.new(File.new("./logs/monitor#{id}.log", 'w'))
+      log_file = File.new("./logs/monitor#{id}.log", 'w')
+      log_file.sync = true # Disable buffering for real-time log supervision
+      @logger = Logger.new(log_file)
       @logger.level = $dbugLvl
       @logger.info "monitor{#@id} - Loading config file..." 
-      #@config = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
-      @config = $config['r_path']
+      @config = YAML.load_file(File.expand_path($config['r_path']))
+      
       begin 
         @logger.info "monitor{#@id} - Connecting to #{@config['uri']}" 
         @session = Restfully::Session.new(
           :username => @config['username'],
           :password => @config['password'],
           :base_uri => @config['uri']
-        )
+          )
         @root = @session.root
       rescue 
         @logger.fatal "monitor{#@id} - API Unreacheable"
@@ -65,7 +71,7 @@ module Phoenix5k
       @logger.info "Looking for #{jobusrid} on #{cluster}"
       (j_ids = [] << jobusrid).flatten! #Convert to array
       size= j_ids.length
-      puts "Size : #{size} & 0 : #{j_ids[0]}"
+      #puts "Size : #{size} & 0 : #{j_ids[0]}"
       s_sites = ((cluster.to_s!="all") && (cluster!=nil)) ? 1 : root.sites.length
       i=0
       root.sites.each do |site|
@@ -83,7 +89,7 @@ module Phoenix5k
                   @jobs << job
                   updateHash(site['uid'], job['uid'])
                   if size == 1 # Job id is unique
-                    return jobs
+                    return
                   end
                 end
               elsif (t_id.kind_of? String)
@@ -106,11 +112,11 @@ module Phoenix5k
       end
       if jobs.length >0
         @logger.info "monitor{#@id} - scan completed"
-        return jobs
+        return
       else
         @logger.warn  "#{jobusrid} not found on #{cluster}"  
         puts "monitor{#@id} - #{jobusrid} not found on #{cluster}"
-        return nil
+        return
       end
     end
     
@@ -149,7 +155,7 @@ module Phoenix5k
       if ((state.to_s=="running") || (state.to_s=="waiting"))
         @logger.info "monitor{#@id} - #{owner} job #{uid} #{state}"
       else 
-        @logger.warn "monitor{#@id} - job #{uid} #{state}"
+        @logger.warn "monitor{#@id} - #{owner} job #{uid} #{state}"
       end
     end
     
@@ -194,7 +200,7 @@ module Phoenix5k
         return
       end
       @jobs.each do |job|
-        print job['uid'].to_s + " "
+        print job['uid'].to_s + " ("+ job['user'] + " - " +job.parent['name'] + "), "
       end
       puts ""
     end
