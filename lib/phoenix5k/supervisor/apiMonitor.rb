@@ -64,9 +64,13 @@ module Phoenix5k
     # @return Updated version of @jobs array
     def fetch_jobs!(cluster, jobusrid)
       if jobusrid==nil
-        @logger.fatal "At least one job or user id must be specified, aborting"
-        raise "At least one job or user id must be specified, aborting"
+        @logger.warn "monitor{#@id} - At least one job or user id must be specified, aborting"
+        return
       end
+      if @root == nil 
+        @logger.warn "monitor{#@id} - It seems API connection was not made "
+        return
+      end 
       puts "monitor{#@id} - Looking for #{jobusrid} on #{cluster}" if $dbug 
       @logger.info "Looking for #{jobusrid} on #{cluster}"
       (j_ids = [] << jobusrid).flatten! #Convert to array
